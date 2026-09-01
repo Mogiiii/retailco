@@ -31,9 +31,8 @@ jobs:
             
       - name: Copy api code to /dist
         run: |
-          for file in api/*
-          do
-            zip file
+          for file in api/*; do
+            zip file 
           end
           cp -r api/ dist/api
           
