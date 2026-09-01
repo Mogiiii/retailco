@@ -16,7 +16,7 @@ Resources:
     Properties:
       Runtime: python3.12
       Handler: routes.handler
-      Role: arn:aws:iam::655533608647:role/lambda
+      Role: !GetAtt lambda.Arn
       Code:
-        S3Bucket: "retailco"
+        S3Bucket: !Ref WebsiteBucket
         S3Key: api/functions.zip
