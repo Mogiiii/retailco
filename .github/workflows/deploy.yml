@@ -29,6 +29,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           aws-region: us-east-1
 
+      - name: Copy api code to /dist
+        run: cp api/ dist/api
+
       - name: Upload to S3
         run: |
           aws s3 sync dist/ s3://retailco-web --delete
