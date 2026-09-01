@@ -44,4 +44,4 @@ jobs:
             aws cloudformation deploy \
             --template-file cloudformation.yml \
             --stack-name retailco \
-            --capabilities retailco-cloudformation
+            --capabilities CAPABILITY_IAM
