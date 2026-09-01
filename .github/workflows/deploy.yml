@@ -28,14 +28,12 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           aws-region: us-east-1
-            
+
       - name: Copy api code to /dist
         run: |
-          for file in api/*; do
-            zip $file 
-          done
-          cp -r api/ dist/api
-          
+          zip -r api.zip api
+          cp api.zip dist/api.zip
+
 
       - name: Upload to S3
         run: |
