@@ -32,7 +32,7 @@ jobs:
       - name: Copy api code to /dist
         run: |
           for file in api/*; do
-            zip file 
+            zip $file 
           done
           cp -r api/ dist/api
           
