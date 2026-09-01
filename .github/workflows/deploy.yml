@@ -29,8 +29,15 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           aws-region: us-east-1
 
+      - name: Deploy Cloudformation template
+        run: |
+          aws cloudformation deploy \
+            --template-file /cloudformation.yml \
+            --stack-name retailco \
+            --capabilities retailco-cloudformation
+            
       - name: Copy api code to /dist
-        run: cp api/ dist/api
+        run: cp -r api/ dist/api
 
       - name: Upload to S3
         run: |

@@ -5,22 +5,18 @@ Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
 
-  WebsiteDistribution:
-    Type: AWS::CloudFront::Distribution
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
     Properties:
-      DistributionConfig:
-        Enabled: true
-        DefaultRootObject: index.html
-        Origins:
-          - Id: WebsiteOrigin
-            DomainName: !GetAtt WebsiteBucket.DomainName
-            S3OriginConfig: {}
-        DefaultCacheBehavior:
-          TargetOriginId: WebsiteOrigin
-          ViewerProtocolPolicy: redirect-to-https
-          AllowedMethods:
-            - GET
-            - HEAD
-          CachedMethods:
-            - GET
-            - HEAD
+      Name: "retailco-api"
+      ProtocolType: HTTP
+
+  ApiFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: routes.handler
+      Role: arn:aws:iam::655533608647:role/lambda
+      Code:
+        S3Bucket: "retailco"
+        S3Key: api/functions.zip
