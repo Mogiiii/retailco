@@ -2,9 +2,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-  WebsiteBucket:
-    Type: AWS::S3::Bucket
-
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -18,5 +15,5 @@ Resources:
       Handler: api/functions.handler
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
-        S3Bucket: !Ref WebsiteBucket
+        S3Bucket: retailco-web
         S3Key: api.zip
