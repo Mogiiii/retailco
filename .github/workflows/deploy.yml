@@ -41,7 +41,7 @@ jobs:
 
       - name: Run CloudFormation
         run: |
-            aws cloudformation deploy
-            --template-file cloudformation.yml
-            --stack-name retailco
+            aws cloudformation deploy \
+            --template-file cloudformation.yml \
+            --stack-name retailco \
             --capabilities retailco-cloudformation

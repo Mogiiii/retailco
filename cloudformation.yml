@@ -15,8 +15,8 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.12
-      Handler: routes.handler
+      Handler: api/functions.handler
       Role: !GetAtt lambda.Arn
       Code:
         S3Bucket: !Ref WebsiteBucket
-        S3Key: api/functions.zip
+        S3Key: api.zip
