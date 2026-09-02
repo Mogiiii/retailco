@@ -1,19 +1,93 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: "retailco-api"
       ProtocolType: HTTP
 
-  ApiFunction:
+  GetTaxRatesFunction:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.12
-      Handler: api/functions.handler
+      Handler: api/functions.get_all
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
         S3Bucket: retailco-web
         S3Key: api.zip
+
+  GetTaxRatesIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt GetTaxRatesFunction.Arn
+      PayloadFormatVersion: "2.0"
+
+  GetTaxRatesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /api/taxrates"
+      Target: !Sub "integrations/${GetTaxRatesIntegration}"
+
+  GetTaxRatesGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetTaxRatesFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
+
+  SetTaxRatesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: api/functions.upsert
+      Role: arn:aws:iam::655533608647:role/lambda
+      Code:
+        S3Bucket: retailco-web
+        S3Key: api.zip
+
+  SetTaxRatesIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt SetTaxRatesFunction.Arn
+      PayloadFormatVersion: "2.0"
+
+  SetTaxRatesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /api/taxrates"
+      Target: !Sub "integrations/${SetTaxRatesIntegration}"
+
+  SetTaxRatesGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SetTaxRatesFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
+
+  ApiStage:
+      Type: AWS::ApiGatewayV2::Stage
+      Properties:
+        ApiId: !Ref HttpApi
+        StageName: "Prod"
+        AutoDeploy: true
+
+  TaxRatesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "retailco-taxrates"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+
+      KeySchema:
+        - AttributeName: id
+          KeyType: N
