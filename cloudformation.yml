@@ -14,7 +14,7 @@ Resources:
       Handler: api/functions.get_all
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
-        S3Bucket: retailco-web
+        S3Bucket: retailco-api
         S3Key: api.zip
 
   GetTaxRatesIntegration:
@@ -47,7 +47,7 @@ Resources:
       Handler: api/functions.upsert
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
-        S3Bucket: retailco-web
+        S3Bucket: retailco-api
         S3Key: api.zip
 
   SetTaxRatesIntegration:
@@ -62,7 +62,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "GET /api/taxrates"
+      RouteKey: "PUT /api/taxrates"
       Target: !Sub "integrations/${SetTaxRatesIntegration}"
 
   SetTaxRatesGatewayPermission:
@@ -74,20 +74,21 @@ Resources:
       SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
 
   ApiStage:
-      Type: AWS::ApiGatewayV2::Stage
-      Properties:
-        ApiId: !Ref HttpApi
-        StageName: "Prod"
-        AutoDeploy: true
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: "Prod"
+      AutoDeploy: true
 
   TaxRatesTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "retailco-taxrates"
+      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
-          AttributeType: S
+          AttributeType: N
 
       KeySchema:
         - AttributeName: id
-          KeyType: N
+          KeyType: HASH
