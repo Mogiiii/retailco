@@ -62,7 +62,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "PUT /api/taxrates"
+      RouteKey: "POST /api/taxrates"
       Target: !Sub "integrations/${SetTaxRatesIntegration}"
 
   SetTaxRatesGatewayPermission:
