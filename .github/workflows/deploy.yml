@@ -19,24 +19,27 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          
+      - parallel:
+          - name: build react app
+            run: |
+              npm ci
+              npm run build
 
-      - run: npm ci
-      - run: npm run build
+          - name: Configure AWS
+            uses: aws-actions/configure-aws-credentials@v4
+            with:
+              role-to-assume: ${{ secrets.AWS_ROLE }}
+              aws-region: us-east-1
 
-      - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          aws-region: us-east-1
-
-      - name: package api dependencies
-        run: pip install -r api/requirements.txt -t api/
+          - name: download api dependencies
+            run: pip install -r api/requirements.txt -t api/
 
       - name: zip api code
         run: |
-            cd api
-            zip -r ../api.zip .
-            cd ..
+          cd api
+          zip -r ../api.zip .
+          cd ..
 
       - name: Upload to S3
         run: |
