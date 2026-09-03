@@ -29,9 +29,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           aws-region: us-east-1
 
+      - name: package api dependencies
+        run: pip install -r api/requirements.txt -t api/
+
       - name: zip api code
-        run: |
-          zip -r api.zip api
+        run: zip -r api.zip api
 
       - name: Upload to S3
         run: |
@@ -40,7 +42,7 @@ jobs:
 
       - name: Run CloudFormation
         run: |
-            aws cloudformation deploy \
-            --template-file cloudformation.yml \
-            --stack-name retailco \
-            --capabilities CAPABILITY_IAM
+          aws cloudformation deploy \
+          --template-file cloudformation.yml \
+          --stack-name retailco \
+          --capabilities CAPABILITY_IAM

@@ -1,0 +1,4 @@
+boto3==1.43.86
+boto3-stubs==1.43.86
+pydantic==2.13.5
+types-boto3-dynamodb==1.43.64
