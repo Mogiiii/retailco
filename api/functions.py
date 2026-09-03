@@ -28,9 +28,11 @@ def get_all(event, context):
 
 # upsert => create or update
 def upsert(event, context):
-    to_add: list[taxrateentry] = json.loads(event["body"])
+    to_add: list[taxrateentry] = [
+        taxrateentry.model_validate(x) for x in json.loads(event["body"])
+    ]
     with table.batch_writer() as br:
         for entry in to_add:
-            i = {"Category": entry.category, "taxrate": entry.taxrate}
+            i = {"id": entry.id, "Category": entry.category, "taxrate": entry.taxrate}
             _ = br.put_item(Item=i)
     return Ok("OK")
