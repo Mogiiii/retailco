@@ -17,11 +17,11 @@ table: Table = dynamodb.Table("retailco-taxrates")
 
 
 def Ok(body):
-    return {"statusCode": 200, "body": body}
+    return {"statusCode": 200, "body": json.dumps(body, default=str)}
 
 
 def get_all(event, context):
-    #TODO handle pagination
+    # TODO handle pagination
     result = table.scan()
     return Ok(result.get("Items", []))
 
@@ -33,4 +33,4 @@ def upsert(event, context):
         for entry in to_add:
             i = {"Category": entry.category, "taxrate": entry.taxrate}
             _ = br.put_item(Item=i)
-    return  Ok("OK")
+    return Ok("OK")
