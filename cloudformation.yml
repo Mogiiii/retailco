@@ -11,7 +11,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.12
-      Handler: api/functions.get_all
+      Handler: functions.get_all
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
         S3Bucket: retailco-api
@@ -44,7 +44,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.12
-      Handler: api/functions.upsert
+      Handler: functions.upsert
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
         S3Bucket: retailco-api
