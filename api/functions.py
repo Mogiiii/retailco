@@ -8,7 +8,7 @@ from types_boto3_dynamodb.service_resource import Table
 
 class taxrateentry(BaseModel):
     id: int
-    category: int
+    category: str
     taxrate: Decimal
 
 
