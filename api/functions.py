@@ -17,7 +17,11 @@ table: Table = dynamodb.Table("retailco-taxrates")
 
 
 def Ok(body):
-    return {"statusCode": 200, "body": json.dumps(body)}
+    def serializer(o):
+        if isinstance(o, Decimal):
+            return float(o)
+
+    return {"statusCode": 200, "body": json.dumps(body, default=serializer)}
 
 
 def get_all(event, context):
