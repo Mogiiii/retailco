@@ -36,5 +36,3 @@ def upsert(event, context):
             i = {"id": entry.id, "category": entry.category, "taxrate": entry.taxrate}
             _ = br.put_item(Item=i)
     return Ok("OK")
-
-def delete(event, context):
