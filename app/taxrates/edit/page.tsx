@@ -11,7 +11,7 @@ const CreateComponent = () => {
   const [category, setCategory] = useState("");
   const [rate, setRate] = useState(0);
 
-  const handleSubmit = async (e: SubmitEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newCategory: taxCategory = {
       id: id,
