@@ -17,7 +17,7 @@ table: Table = dynamodb.Table("retailco-taxrates")
 
 
 def Ok(body):
-    return {"statusCode": 200, "body": json.dumps(body, default=str)}
+    return {"statusCode": 200, "body": json.dumps(body)}
 
 
 def get_all(event, context):

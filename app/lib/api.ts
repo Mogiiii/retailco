@@ -2,26 +2,17 @@ import { backend_url } from "../config";
 import { taxCategory } from "../models";
 
 export const getTaxRates = (): taxCategory[] => {
-  let sampleData = [
-    {
-      id: 1,
-      category: "test",
-      taxrate: 0.1,
-    },
-  ];
   fetch(backend_url + "taxrates")
     .then((response) => {
       response
         .json()
-        .then((data) => {
-          return data;
-        })
-        .catch((e) => console.timeLog(e));
+        .then((r: { id: string; taxrate: string; category: string }[]) => {
+          return r.map((d) => { 
+          });
+        });
     })
     .catch((e) => console.timeLog(e));
-
-  //fallback
-  return sampleData;
+  return [];
 };
 
 export const setTaxRates = (data: taxCategory[]) => {
