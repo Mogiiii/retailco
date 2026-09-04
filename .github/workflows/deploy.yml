@@ -44,7 +44,7 @@ jobs:
       - name: Upload to S3
         run: |
           aws s3 cp api.zip s3://retailco-api/api.zip
-          aws s3 sync dist/ s3://retailco-web --delete
+          aws s3 sync out/ s3://retailco-web --delete
 
       - name: Run CloudFormation
         run: |
