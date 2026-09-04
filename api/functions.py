@@ -33,9 +33,8 @@ def upsert(event, context):
     ]
     with table.batch_writer() as br:
         for entry in to_add:
-            i = {"id": entry.id, "Category": entry.category, "taxrate": entry.taxrate}
+            i = {"id": entry.id, "category": entry.category, "taxrate": entry.taxrate}
             _ = br.put_item(Item=i)
     return Ok("OK")
 
 def delete(event, context):
-    
