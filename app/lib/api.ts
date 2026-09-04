@@ -1,23 +1,14 @@
+import axios from "axios";
 import { backend_url } from "../config";
 import { taxCategory } from "../models";
 
-export const getTaxRates = (): taxCategory[] => {
-  fetch(backend_url + "taxrates")
-    .then((response) => {
-      response
-        .json()
-        .then((r: { id: string; taxrate: string; category: string }[]) => {
-          return r.map((d) => { 
-          });
-        });
-    })
-    .catch((e) => console.timeLog(e));
-  return [];
+export const getTaxRates = async (): Promise<taxCategory[]> => {
+  console.log("starting");
+  const resp = await axios.get(backend_url + "taxrates");
+  return resp.data;
 };
 
-export const setTaxRates = (data: taxCategory[]) => {
-  fetch(backend_url + "taxrates", {
-    method: "POST",
-    body: JSON.stringify(data),
-  }).catch((e) => console.timeLog(e));
+export const setTaxRates = async (data: taxCategory[]) => {
+  console.log("POST " + JSON.stringify(data))
+  await axios.post(backend_url + "taxrates", data);
 };

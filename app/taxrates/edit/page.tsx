@@ -1,21 +1,24 @@
 "use client";
 
+
 import { useState } from "react";
 import { taxCategory } from "../../models";
 import { setTaxRates } from "../../lib/api";
+import Link from "next/link";
 
 const CreateComponent = () => {
   const [id, setId] = useState(0);
   const [category, setCategory] = useState("");
   const [rate, setRate] = useState(0);
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e: SubmitEvent) => {
+    e.preventDefault()
     const newCategory: taxCategory = {
       id: id,
       category: category,
       taxrate: rate,
     };
-    setTaxRates([newCategory]);
+    await setTaxRates([newCategory]);
   };
 
   return (
@@ -42,38 +45,17 @@ const CreateComponent = () => {
           value={rate}
           onChange={(e) => setRate(Number.parseFloat(e.target.value))}
         ></input>
-      </form>
-    </>
-  );
-};
-
-const CsvComponent = () => {
-  const [file, setFile] = useState<File | null>();
-  const handleSubmit = () => {
-    if (file) {
-    }
-  };
-
-  return (
-    <>
-      Upload CSV
-      <form onSubmit={handleSubmit}>
-        <input
-          type="file"
-          accept=".csv"
-          onChange={(e) => setFile(e.target.files?.[0])}
-        ></input>
+        <br></br>
         <button>submit</button>
       </form>
     </>
   );
 };
-
 const page = () => {
   return (
     <>
+      <Link href={"/taxrates"}>Back to tax rates</Link> <br></br>
       <CreateComponent></CreateComponent>
-      <CsvComponent />
     </>
   );
 };
