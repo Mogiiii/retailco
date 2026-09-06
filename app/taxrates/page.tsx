@@ -43,6 +43,7 @@ export default function Page() {
 
   return (
     <>
+      <Link href="/">back to main page</Link>
       <Link href="/taxrates/edit">edit tax rates</Link>
       <br></br>
       <TableDisplay data={rates} />
