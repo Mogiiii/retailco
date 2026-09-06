@@ -16,13 +16,15 @@ const TableDisplay = ({ data }: { data: taxCategory[] | undefined }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((r) => (
-            <tr key={r.id}>
-              <td>{r.id}</td>
-              <td>{r.category}</td>
-              <td>{r.taxrate}</td>
-            </tr>
-          ))}
+          {data
+            .sort((a, b) => a.id - b.id)
+            .map((r) => (
+              <tr key={r.id}>
+                <td>{r.id}</td>
+                <td>{r.category}</td>
+                <td>{r.taxrate}</td>
+              </tr>
+            ))}
         </tbody>
       </table>
     );
