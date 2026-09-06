@@ -16,7 +16,7 @@ class tax_summary(BaseModel):
 
 
 openapi_api_key = os.environ["OPENAI_API_KEY"]
-backend_api_url = ""
+backend_api_url = "https://zxu7ck7dk4.execute-api.us-east-1.amazonaws.com/Prod/api/"
 client = OpenAI(api_key=openapi_api_key)
 
 
