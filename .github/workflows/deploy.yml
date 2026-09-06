@@ -29,9 +29,6 @@ jobs:
           - name: download api dependencies
             run: pip install -r api/requirements.txt -t api/
 
-          - name: download agent dependencies
-            run: pip install -r agent/requirements.txt -t agent/
-
           - name: Configure AWS
             uses: aws-actions/configure-aws-credentials@v4
             with:
@@ -45,13 +42,6 @@ jobs:
               zip -q -r ../api.zip .
               cd ..
               aws s3 cp api.zip s3://retailco-api/api.zip
-
-          - name: zip and push agent code
-            run: |
-              cd agent
-              zip -q -r ../agent.zip .
-              cd ..
-              aws s3 cp agent.zip s3://retailco-api/agent.zip
 
           - name: Upload react app to S3
             run: |
