@@ -1,3 +1,4 @@
+import json
 import os
 
 import requests
@@ -43,7 +44,7 @@ def process_document(event, context):
                     {
                         "type": "input_text",
                         "text": "Analyze the file and assign tax categories according to the following data:\n"
-                        + tax_categories,
+                        + json.dumps(tax_categories),
                     },
                 ],
             }
