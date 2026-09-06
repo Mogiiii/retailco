@@ -72,10 +72,9 @@ def intake_document(event, context):
         file_content = event["body"]
         maybe_mime = filetype.guess(base64.b64decode(file_content))
         content_type = maybe_mime.mime if maybe_mime else None
-        file_name = headers.get("x-file-name")
         file_data = f"data:{content_type};base64,{file_content}"
 
-        id = f"{file_name}-{datetime.now()}"
+        id = f"Document-{datetime.now()}"
 
         if content_type == None:
             return {"statusCode": 400, "body": "invalid/corrupted file"}
@@ -84,14 +83,14 @@ def intake_document(event, context):
         tax_document_table.put_item(Item=i)
 
         lambda_client = boto3.client("lambda")
-
+        lambda_fn = os.environ["DOCUMENT_PROCESS_FN"]
+        
         lambda_client.invoke(
-            FunctionName=process_document,
+            FunctionName=lambda_fn,
             InvocationType="Event",
             Payload=json.dumps(
                 {
                     "id": id,
-                    "filename": file_name,
                     "data": file_data,
                 }
             ).encode("utf-8"),
@@ -103,6 +102,7 @@ def intake_document(event, context):
         }
 
     except Exception as e:
+
         return {"statusCode": 500, "body": e}
 
 
@@ -112,7 +112,6 @@ def process_document(event, context):
     client = OpenAI(api_key=openapi_api_key)
 
     file_data = event["data"]
-    file_name = event["filename"]
     id = event["id"]
 
     # TODO pagination
@@ -126,7 +125,7 @@ def process_document(event, context):
                     "content": [
                         {
                             "type": "input_file",
-                            "filename": file_name,
+                            "filename": "document",
                             "file_data": file_data,
                         },
                         {

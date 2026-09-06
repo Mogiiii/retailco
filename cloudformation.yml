@@ -98,6 +98,7 @@ Resources:
       Environment:
         Variables:
           OPENAI_API_KEY: !Ref OpenaiApiKey
+          DOCUMENT_PROCESS_FN: !Ref ProcessDocumentFunction
 
   CalculateTaxRatesIntegration:
     Type: AWS::ApiGatewayV2::Integration
@@ -114,7 +115,6 @@ Resources:
       RouteKey: "POST /api/calculatetax"
       Target: !Sub "integrations/${CalculateTaxRatesIntegration}"
 
-
   CalculateTaxRatesGatewayPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -122,6 +122,16 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
+
+  ProcessDocumentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: lambda.process_document
+      Role: arn:aws:iam::655533608647:role/lambda
+      Code:
+        S3Bucket: retailco-api
+        S3Key: api.zip
 
   ApiStage:
     Type: AWS::ApiGatewayV2::Stage
