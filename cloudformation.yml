@@ -11,6 +11,13 @@ Resources:
     Properties:
       Name: "retailco-api"
       ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - "http://retailco-web.s3-website-us-east-1.amazonaws.com"
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
 
   GetTaxRatesFunction:
     Type: AWS::Lambda::Function
