@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 
@@ -28,7 +29,7 @@ def process_document(event, context):
     headers = event.get("headers")
     tax_categories = requests.get(backend_api_url + "taxrates").json()
     file_content = event["body"]
-    maybe_mime = filetype.guess(file_content)
+    maybe_mime = filetype.guess(base64.b64decode(file_content))
     content_type = maybe_mime.mime if maybe_mime else None
     file_name = headers.get("x-file-name")
     file_data = f"data:{content_type};base64,{file_content}"
