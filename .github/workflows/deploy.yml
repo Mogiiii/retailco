@@ -19,12 +19,18 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          
+
       - parallel:
           - name: build react app
             run: |
               npm ci
               npm run build
+
+          - name: download api dependencies
+            run: pip install -r api/requirements.txt -t api/
+
+          - name: download agent dependencies
+            run: pip install -r agent/requirements.txt -t agent/
 
           - name: Configure AWS
             uses: aws-actions/configure-aws-credentials@v4
@@ -32,23 +38,30 @@ jobs:
               role-to-assume: ${{ secrets.AWS_ROLE }}
               aws-region: us-east-1
 
-          - name: download api dependencies
-            run: pip install -r api/requirements.txt -t api/
+      - parallel:
+          - name: zip and push api code
+            run: |
+              cd api
+              zip -q -r ../api.zip .
+              cd ..
+              aws s3 cp api.zip s3://retailco-api/api.zip
 
-      - name: zip api code
-        run: |
-          cd api
-          zip -r ../api.zip .
-          cd ..
+          - name: zip and push agent code
+            run: |
+              cd agent
+              zip -q -r ../agent.zip .
+              cd ..
+              aws s3 cp agent.zip s3://retailco-api/agent.zip
 
-      - name: Upload to S3
-        run: |
-          aws s3 cp api.zip s3://retailco-api/api.zip
-          aws s3 sync out/ s3://retailco-web --delete
+          - name: Upload react app to S3
+            run: |
+              aws s3 sync out/ s3://retailco-web --delete
 
       - name: Run CloudFormation
         run: |
           aws cloudformation deploy \
           --template-file cloudformation.yml \
           --stack-name retailco \
-          --capabilities CAPABILITY_IAM
+          --capabilities CAPABILITY_IAM \
+          --parameter-overrides \
+            OpenaiApiKey="${{ secrets.OPENAI_API_KEY }}"

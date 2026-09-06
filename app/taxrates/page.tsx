@@ -34,10 +34,8 @@ const TableDisplay = ({ data }: { data: taxCategory[] | undefined }) => {
 export default function Page() {
   const [rates, setRates] = useState<taxCategory[] | undefined>();
   useEffect(() => {
-    console.log("loading");
     getTaxRates().then((r) => {
       setRates(r);
-      console.log("loaded " + r);
     });
   }, []);
 

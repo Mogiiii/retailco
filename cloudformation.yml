@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
+Parameters:
+  OpenaiApiKey:
+    Type: String
+    NoEcho: true
+
 Resources:
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
@@ -11,7 +16,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.12
-      Handler: functions.get_all
+      Handler: taxdb.get_all
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
         S3Bucket: retailco-api
@@ -44,7 +49,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.12
-      Handler: functions.upsert
+      Handler: taxdb.upsert
       Role: arn:aws:iam::655533608647:role/lambda
       Code:
         S3Bucket: retailco-api
@@ -69,6 +74,43 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref SetTaxRatesFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
+
+  CalculateTaxRatesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: agent.process_document
+      Role: arn:aws:iam::655533608647:role/lambda
+      Code:
+        S3Bucket: retailco-api
+        S3Key: agent.zip
+
+      Environment:
+        Variables:
+          OPENAI_API_KEY: !Ref OpenaiApiKey
+
+  CalculateTaxRatesIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt CalculateTaxRatesFunction.Arn
+      PayloadFormatVersion: "2.0"
+
+  CalculateTaxRatesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /api/calculatetax"
+      Target: !Sub "integrations/${CalculateTaxRatesIntegration}"
+
+  CalculateTaxRatesGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CalculateTaxRatesFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
