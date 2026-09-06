@@ -1,9 +1,11 @@
 import json
 import os
 
+import filetype
 import requests
 from openai import OpenAI
 from pydantic import BaseModel
+from pydantic.type_adapter import P
 
 
 class tax_line_item(BaseModel):
@@ -26,10 +28,13 @@ def process_document(event, context):
     headers = event.get("headers")
     tax_categories = requests.get(backend_api_url + "taxrates").json()
     file_content = event["body"]
-    content_type = headers.get("content-type")
+    maybe_mime = filetype.guess(file_content)
+    content_type = maybe_mime.mime if maybe_mime else None
     file_name = headers.get("x-file-name")
     file_data = f"data:{content_type};base64,{file_content}"
 
+    if content_type == None:
+        return {"statusCode": 400, "body": "invalid file type"}
     response = client.responses.parse(
         model="gpt-4o-mini",
         input=[
