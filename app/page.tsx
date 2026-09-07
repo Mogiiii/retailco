@@ -13,6 +13,7 @@ const TaxSummary = ({
   taxCategories: taxCategory[];
   data: taxItem[];
 }) => {
+  console.log(data);
   if (data) {
     const processed_data = data.map((item) => {
       const category = taxCategories.find(
@@ -23,7 +24,7 @@ const TaxSummary = ({
         category: category.category,
         taxRate: category.taxrate,
         pretaxAmount: item.pretax_amount,
-        taxAmount: item.pretax_amount * category.taxrate,
+        taxAmount: Math.round(item.pretax_amount * category.taxrate) / 100,
       };
     });
 
@@ -82,11 +83,11 @@ const TaxDocumentsSection = ({
         const Detail = () => {
           if (d.result) {
             return (
-              <details key={d.id} open>
-                <summary>detials</summary>
+              <details key={d.id}>
+                <summary>details</summary>
                 <TaxSummary
                   taxCategories={taxCategories}
-                  data={d.result}
+                  data={JSON.parse(d.result).items}
                 ></TaxSummary>
               </details>
             );
@@ -95,7 +96,7 @@ const TaxDocumentsSection = ({
         };
         return (
           <div key={d.id}>
-            {d.createdAt} {d.id} {d.status}
+            {d.file_name} {d.createdAt} {d.status}
             <Detail></Detail>
           </div>
         );

@@ -19,7 +19,7 @@ class tax_line_item(BaseModel):
 
 
 class tax_summary(BaseModel):
-    tax_items: list[tax_line_item]
+    items: list[tax_line_item]
 
 
 class taxrateentry(BaseModel):
@@ -169,12 +169,11 @@ def process_document(event, context):
             text_format=tax_summary,
         )
         print("openai response:", response)
-        response_obj: tax_summary = json.loads(response.output_text)
         i = {
             "id": id,
             "file_name": file_name,
             "status": "complete",
-            "result": response_obj.tax_items,
+            "result": response.output_text,
             "createdAt": table_data["Item"]["createdAt"],
         }
         tax_document_table.put_item(Item=i)

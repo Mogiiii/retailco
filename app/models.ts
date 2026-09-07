@@ -14,5 +14,6 @@ export type taxDocumentStatus = {
   id: string,
   createdAt: string,
   status: string,
-  result: taxItem[]
+  result: string
+  file_name: string
 }
