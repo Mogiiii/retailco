@@ -33,14 +33,16 @@ tax_rates_table: Table = dynamodb.Table("retailco-taxrates")
 tax_document_table: Table = dynamodb.Table("retailco-taxdocuments")
 
 
+def serializer(o):
+    if isinstance(o, Decimal):
+        if o % 1 == 0:
+            return int(o)
+        return float(o)
+    else:
+        return str(o)
+
+
 def Ok(body):
-    def serializer(o):
-        if isinstance(o, Decimal):
-            if o % 1 == 0:
-                return int(o)
-            return float(o)
-        else:
-            return str(o)
 
     return {"statusCode": 200, "body": json.dumps(body, default=serializer)}
 
@@ -80,6 +82,7 @@ def request_upload_url(event, context):
 
     i = {
         "id": id,
+        "file_name": file_name,
         "status": "awaiting_upload",
         "s3_location": upload_location,
         "createdAt": str(datetime.now()),
@@ -112,6 +115,7 @@ def process_document(event, context):
     bucket = record["s3"]["bucket"]["name"]
     key = record["s3"]["object"]["key"]
     id = key.split("/")[1]
+    file_name = key.split("/")[2]
 
     response = s3_client.get_object(Bucket=bucket, Key=key)
 
@@ -128,8 +132,8 @@ def process_document(event, context):
 
     i = {
         "id": id,
+        "file_name": file_name,
         "status": "processing started",
-        "data": [],
         "createdAt": table_data["Item"]["createdAt"],
     }
     tax_document_table.put_item(Item=i)
@@ -156,7 +160,7 @@ def process_document(event, context):
                         },
                         {
                             "type": "input_text",
-                            "text": "Analyze the file and assign tax categories according to the following data:\n"
+                            "text": "Analyze the file and assign tax category IDs according to the following data:\n"
                             + json.dumps(tax_categories, default=serializer),
                         },
                     ],
@@ -165,15 +169,17 @@ def process_document(event, context):
             text_format=tax_summary,
         )
         print("openai response:", response)
+        response_obj: tax_summary = json.loads(response.output_text)
         i = {
             "id": id,
+            "file_name": file_name,
             "status": "complete",
-            "data": response.output_text,
+            "result": response_obj.tax_items,
             "createdAt": table_data["Item"]["createdAt"],
         }
         tax_document_table.put_item(Item=i)
         print("complete")
     except Exception as e:
-        i = {"id": id, "status": "failed", "data": [], "error": e}
+        i = {"id": id, "status": "failed", "error": e}
         tax_document_table.put_item(Item=i)
         print(e)

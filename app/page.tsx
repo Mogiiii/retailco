@@ -10,10 +10,10 @@ const TaxSummary = ({
   taxCategories,
   data,
 }: {
-  taxCategories: taxCategory[] | undefined;
-  data: taxSummary | undefined;
+  taxCategories: taxCategory[];
+  data: taxSummary;
 }) => {
-  if (taxCategories && data) {
+  if (data.tax_items) {
     const processed_data = data.tax_items.map((item) => {
       const category = taxCategories.find(
         (tc) => tc.id == item.tax_category,
@@ -66,38 +66,38 @@ const TaxSummary = ({
         </tbody>
       </table>
     );
-  } else <></>;
+  } else return <> {data}</>;
 };
 
 const TaxDocumentsSection = ({
   taxCategories,
-  data,
+  data: taxDocumentData,
 }: {
-  taxCategories: taxCategory[] | undefined;
-  data: taxDocumentStatus[] | undefined;
+  taxCategories: taxCategory[];
+  data: taxDocumentStatus[];
 }) => {
   return (
     <div>
-      {data?.map((d) => {
-        function Detail() {
-          if (d.data) {
+      {taxDocumentData?.map((d) => {
+        const Detail = () => {
+          if (d.result) {
             return (
-              <details>
+              <details key={d.id} open>
                 <summary>detials</summary>
                 <TaxSummary
                   taxCategories={taxCategories}
-                  data={d.data}
+                  data={d.result}
                 ></TaxSummary>
               </details>
             );
           }
           return <></>;
-        }
+        };
         return (
-          <>
-            {d.createdAt} {d.id}
+          <div key={d.id}>
+            {d.createdAt} {d.id} {d.status}
             <Detail></Detail>
-          </>
+          </div>
         );
       })}
     </div>
@@ -106,10 +106,8 @@ const TaxDocumentsSection = ({
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
-  const [documents, setDocuments] = useState<taxDocumentStatus[] | undefined>();
-  const [taxCategories, setTaxCategories] = useState<
-    taxCategory[] | undefined
-  >();
+  const [documents, setDocuments] = useState<taxDocumentStatus[]>([]);
+  const [taxCategories, setTaxCategories] = useState<taxCategory[]>([]);
 
   useEffect(() => {
     getTaxRates().then((r) => {
@@ -154,7 +152,7 @@ export default function Home() {
       <Link href="/taxrates">view current tax rates</Link>
 
       <form onSubmit={fileUploadSubmitHandler}>
-        Let agent calculate tax rates:{" "}
+        Upload new file:{" "}
         <input
           type="file"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
