@@ -116,14 +116,23 @@ def process_document(event, context):
     response = s3_client.get_object(Bucket=bucket, Key=key)
 
     file_data = response["Body"].read()
+    file_data = base64.b64encode(file_data).decode("utf-8")
 
     print("bucket:" + bucket)
     print("key:" + key)
     print("id:" + id)
 
     table_data = tax_document_table.get_item(Key={"id": id})
+    # print(json.dumps(table_data))
     content_type = table_data["Item"]["content_type"]
-    print(json.dumps(table_data))
+
+    i = {
+        "id": id,
+        "status": "processing started",
+        "data": [],
+        "createdAt": table_data["Item"]["createdAt"],
+    }
+    tax_document_table.put_item(Item=i)
 
     openapi_api_key = os.environ["OPENAI_API_KEY"]
     client = OpenAI(api_key=openapi_api_key)
@@ -131,6 +140,8 @@ def process_document(event, context):
     file_content = f"data:{content_type};base64,{file_data}"
     # TODO pagination
     tax_categories = tax_rates_table.scan()
+
+    print("beginning openai call")
     try:
         response = client.responses.parse(
             model="gpt-4o-mini",
@@ -146,22 +157,22 @@ def process_document(event, context):
                         {
                             "type": "input_text",
                             "text": "Analyze the file and assign tax categories according to the following data:\n"
-                            + json.dumps(tax_categories),
+                            + json.dumps(tax_categories, default=serializer),
                         },
                     ],
                 }
             ],
             text_format=tax_summary,
         )
-
+        print("openai response:", response)
         i = {
             "id": id,
             "status": "complete",
-            "data": response,
+            "data": response.output_text,
             "createdAt": table_data["Item"]["createdAt"],
         }
         tax_document_table.put_item(Item=i)
-
+        print("complete")
     except Exception as e:
         i = {"id": id, "status": "failed", "data": [], "error": e}
         tax_document_table.put_item(Item=i)
