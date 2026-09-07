@@ -3,7 +3,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { backend_url } from "./config";
-import { taxCategory, taxDocumentStatus, taxSummary } from "./models";
+import { taxCategory, taxDocumentStatus, taxItem } from "./models";
 import { getTaxDocumentStatus, getTaxRates } from "./lib/api";
 
 const TaxSummary = ({
@@ -11,10 +11,10 @@ const TaxSummary = ({
   data,
 }: {
   taxCategories: taxCategory[];
-  data: taxSummary;
+  data: taxItem[];
 }) => {
-  if (data.tax_items) {
-    const processed_data = data.tax_items.map((item) => {
+  if (data) {
+    const processed_data = data.map((item) => {
       const category = taxCategories.find(
         (tc) => tc.id == item.tax_category,
       ) ?? { category: "error", id: 0, taxrate: 0 };
