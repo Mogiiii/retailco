@@ -124,6 +124,7 @@ Resources:
       Runtime: python3.12
       Handler: lambda.process_document
       Role: arn:aws:iam::655533608647:role/lambda
+      Timeout: 600
       Code:
         S3Bucket: retailco-api
         S3Key: api.zip
