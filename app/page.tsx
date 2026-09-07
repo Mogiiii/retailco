@@ -3,7 +3,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { backend_url } from "./config";
-import { taxCategory, taxSummary } from "./models";
+import { taxCategory, taxDocumentStatus, taxSummary } from "./models";
 import { getTaxRates } from "./lib/api";
 
 const TaxSummary = ({
@@ -69,9 +69,44 @@ const TaxSummary = ({
   } else <></>;
 };
 
+const TaxDocumentsSection = ({
+  taxCategories,
+  data,
+}: {
+  taxCategories: taxCategory[] | undefined;
+  data: taxDocumentStatus[] | undefined;
+}) => {
+  return (
+    <div>
+      {data?.map((d) => {
+        function Detail() {
+          if (d.data) {
+            return (
+              <details>
+                <summary>detials</summary>
+                <TaxSummary
+                  taxCategories={taxCategories}
+                  data={d.data}
+                ></TaxSummary>
+              </details>
+            );
+          }
+          return <></>;
+        }
+        return (
+          <>
+            {d.createdAt} {d.id}
+            <Detail></Detail>
+          </>
+        );
+      })}
+    </div>
+  );
+};
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
-  const [responseData, setResponseData] = useState<taxSummary | undefined>();
+  const [documents, setDocuments] = useState<taxDocumentStatus[] | undefined>();
   const [taxCategories, setTaxCategories] = useState<
     taxCategory[] | undefined
   >();
@@ -123,10 +158,10 @@ export default function Home() {
         ></input>
         <button>Submit</button>
       </form>
-      <TaxSummary
+      <TaxDocumentsSection
+        data={documents}
         taxCategories={taxCategories}
-        data={responseData}
-      ></TaxSummary>
+      ></TaxDocumentsSection>
     </>
   );
 }

@@ -13,3 +13,10 @@ export type taxItem = {
 export type taxSummary = {
   tax_items: taxItem[];
 };
+
+export type taxDocumentStatus = {
+  id: string,
+  createdAt: string,
+  status: string,
+  data?: taxSummary
+}
