@@ -127,8 +127,8 @@ def process_document(event, context):
     print("id:" + id)
 
     table_data = tax_document_table.get_item(Key={"id": id})
-    # print(json.dumps(table_data))
-    content_type = table_data["Item"]["content_type"]
+    print(json.dumps(table_data))
+    content_type: str = table_data["Item"]["content_type"]
 
     i = {
         "id": id,
@@ -145,24 +145,30 @@ def process_document(event, context):
     # TODO pagination
     tax_categories = tax_rates_table.scan()
 
+    content = {
+        "type": "input_file",
+        "filename": "document",
+        "file_data": file_content,
+    }
+    if "image" in content_type:
+        content = {
+            "type": "input_image",
+            "image_url": file_content,
+        }
     print("beginning openai call")
     try:
         response = client.responses.parse(
-            model="gpt-4o-mini",
+            model="gpt-5.6-luna",
             input=[
                 {
                     "role": "user",
                     "content": [
                         {
-                            "type": "input_file",
-                            "filename": "document",
-                            "file_data": file_content,
-                        },
-                        {
                             "type": "input_text",
                             "text": "Analyze the file and assign tax category IDs according to the following data:\n"
                             + json.dumps(tax_categories, default=serializer),
                         },
+                        content,
                     ],
                 }
             ],
@@ -179,6 +185,7 @@ def process_document(event, context):
         tax_document_table.put_item(Item=i)
         print("complete")
     except Exception as e:
+        print(e)
         i = {"id": id, "status": "failed", "error": e}
         tax_document_table.put_item(Item=i)
-        print(e)
+        
