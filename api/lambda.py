@@ -78,7 +78,12 @@ def request_upload_url(event, context):
     id = str(uuid.uuid4())
     upload_location = f"documents/{id}/{file_name}"
 
-    i = {"id": id, "status": "awaiting_upload", "s3_location": upload_location}
+    i = {
+        "id": id,
+        "status": "awaiting_upload",
+        "s3_location": upload_location,
+        "createdAt": datetime.now(),
+    }
     tax_document_table.put_item(Item=i)
 
     upload_url = s3_client.generate_presigned_url(
@@ -98,86 +103,58 @@ def request_upload_url(event, context):
         ),
     }
 
-
-def intake_document(event, context):
-    try:
-        headers = event.get("headers")
-        file_content = event["body"]
-        maybe_mime = filetype.guess(base64.b64decode(file_content))
-        content_type = maybe_mime.mime if maybe_mime else None
-        file_data = f"data:{content_type};base64,{file_content}"
-
-        id = f"Document-{datetime.now()}"
-
-        if content_type == None:
-            return {"statusCode": 400, "body": "invalid/corrupted file"}
-
-        i = {"id": id, "status": "processing", "data": []}
-        tax_document_table.put_item(Item=i)
-
-        lambda_client = boto3.client("lambda")
-        lambda_fn = os.environ["DOCUMENT_PROCESS_FN"]
-
-        lambda_client.invoke(
-            FunctionName=lambda_fn,
-            InvocationType="Event",
-            Payload=json.dumps(
-                {
-                    "id": id,
-                    "data": file_data,
-                }
-            ).encode("utf-8"),
-        )
-
-        return {
-            "statusCode": 202,
-            "body": "Succssfully submitted " + id,
-        }
-
-    except Exception as e:
-        print(e)
-        return {"statusCode": 500, "body": e}
-
-
 def process_document(event, context):
+    s3_client = boto3.client("s3")
 
-    openapi_api_key = os.environ["OPENAI_API_KEY"]
-    client = OpenAI(api_key=openapi_api_key)
+    record = event["Records"]
+    bucket = record["s3"]["bucket"]["name"]
+    key = record["s3"]["object"]["key"]
+    id = key.split("/")[1]
 
-    file_data = event["data"]
-    id = event["id"]
+    response = s3_client.get_object(Bucket=bucket, Key=key)
 
-    # TODO pagination
-    tax_categories = tax_rates_table.scan()
-    try:
-        response = client.responses.parse(
-            model="gpt-4o-mini",
-            input=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_file",
-                            "filename": "document",
-                            "file_data": file_data,
-                        },
-                        {
-                            "type": "input_text",
-                            "text": "Analyze the file and assign tax categories according to the following data:\n"
-                            + json.dumps(tax_categories),
-                        },
-                    ],
-                }
-            ],
-            text_format=tax_summary,
-        )
+    file_content = response["Body"].read()
 
-        i = {"id": id, "status": "complete", "data": response}
-        tax_document_table.put_item(Item=i)
-        return {"statusCode": 200, "body": "Success"}
+    print("bucket:" + bucket)
+    print("key:" + key)
+    print("id:" + id)
+    print("file content:" + file_content)
 
-    except Exception as e:
-        i = {"id": id, "status": "complete", "data": [], "error": e}
-        tax_document_table.put_item(Item=i)
-        print(e)
-        return {"statusCode": 500, "body": e}
+    table_data = tax_document_table.get_item(Key={"id": id})
+    print(json.dumps(table_data))
+    
+    # openapi_api_key = os.environ["OPENAI_API_KEY"]
+    # client = OpenAI(api_key=openapi_api_key)
+
+    # # TODO pagination
+    # tax_categories = tax_rates_table.scan()
+    # try:
+    #     response = client.responses.parse(
+    #         model="gpt-4o-mini",
+    #         input=[
+    #             {
+    #                 "role": "user",
+    #                 "content": [
+    #                     {
+    #                         "type": "input_file",
+    #                         "filename": "document",
+    #                         "file_data": file_content,
+    #                     },
+    #                     {
+    #                         "type": "input_text",
+    #                         "text": "Analyze the file and assign tax categories according to the following data:\n"
+    #                         + json.dumps(tax_categories),
+    #                     },
+    #                 ],
+    #             }
+    #         ],
+    #         text_format=tax_summary,
+    #     )
+
+    #     i = {"id": id, "status": "complete", "data": response}
+    #     tax_document_table.put_item(Item=i)
+
+    # except Exception as e:
+    #     i = {"id": id, "status": "complete", "data": [], "error": e}
+    #     tax_document_table.put_item(Item=i)
+    #     print(e)
