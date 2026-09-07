@@ -112,7 +112,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "POST /api/createdocument"
+      RouteKey: "POST /api/taxrates"
       Target: !Sub "integrations/${CalculateTaxRatesIntegration}"
 
   CalculateTaxRatesGatewayPermission:
@@ -145,7 +145,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "POST /api/taxrates"
+      RouteKey: "POST /api/createdocument"
       Target: !Sub "integrations/${UploadDocumentIntegration}"
 
   UploadDocumentGatewayPermission:
