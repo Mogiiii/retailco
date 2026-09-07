@@ -71,7 +71,7 @@ def get_documents(event, context):
 
 def request_upload_url(event, context):
     s3_client = boto3.client("s3")
-    body = event["body"]
+    body = json.loads(event["body"])
     file_name = body["filename"]
     content_type = body["content_type"]
 
