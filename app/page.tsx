@@ -86,9 +86,20 @@ export default function Home() {
     e.preventDefault();
     if (file) {
       axios
-        .postForm(backend_url + "calculatetax", file)
+        .post(backend_url + "createdocument", {
+          filename: file.name,
+          content_type: file.type,
+        })
         .then((r) => {
-          setResponseData(r.data);
+          console.log("uploading to " + r.data.uploadUrl);
+          axios
+            .put(r.data.uploadUrl, file)
+            .then(() => {
+              alert("Document successfully uploaded");
+            })
+            .catch((e) => {
+              console.error(e);
+            });
         })
         .catch((e) => {
           console.error(e);

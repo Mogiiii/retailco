@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
@@ -38,6 +39,8 @@ def Ok(body):
             if o % 1 == 0:
                 return int(o)
             return float(o)
+        else:
+            return str(o)
 
     return {"statusCode": 200, "body": json.dumps(body, default=serializer)}
 
@@ -66,6 +69,36 @@ def get_documents(event, context):
     return Ok(result.get("Items", []))
 
 
+def request_upload_url(event, context):
+    s3_client = boto3.client("s3")
+    body = event["body"]
+    file_name = body["filename"]
+    content_type = body["content_type"]
+
+    id = str(uuid.uuid4())
+    upload_location = f"documents/{id}/{file_name}"
+
+    i = {"id": id, "status": "awaiting_upload", "s3_location": upload_location}
+    tax_document_table.put_item(Item=i)
+
+    upload_url = s3_client.generate_presigned_url(
+        "put_object",
+        Params={
+            "Bucket": "retailco-documents",
+            "Key": upload_location,
+            "ContentType": content_type,
+        },
+        ExpiresIn=600,
+    )
+
+    return {
+        "statusCode": 202,
+        "body": json.dumps(
+            {"id": id, "uploadUrl": upload_url, "s3_upload_location": upload_location}
+        ),
+    }
+
+
 def intake_document(event, context):
     try:
         headers = event.get("headers")
@@ -84,7 +117,7 @@ def intake_document(event, context):
 
         lambda_client = boto3.client("lambda")
         lambda_fn = os.environ["DOCUMENT_PROCESS_FN"]
-        
+
         lambda_client.invoke(
             FunctionName=lambda_fn,
             InvocationType="Event",
@@ -102,7 +135,7 @@ def intake_document(event, context):
         }
 
     except Exception as e:
-
+        print(e)
         return {"statusCode": 500, "body": e}
 
 
@@ -146,4 +179,5 @@ def process_document(event, context):
     except Exception as e:
         i = {"id": id, "status": "complete", "data": [], "error": e}
         tax_document_table.put_item(Item=i)
+        print(e)
         return {"statusCode": 500, "body": e}

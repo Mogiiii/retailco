@@ -112,13 +112,46 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "POST /api/calculatetax"
+      RouteKey: "POST /api/createdocument"
       Target: !Sub "integrations/${CalculateTaxRatesIntegration}"
 
   CalculateTaxRatesGatewayPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref CalculateTaxRatesFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
+
+  UploadDocumentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: lambda.request_upload_url
+      Role: arn:aws:iam::655533608647:role/lambda
+      Code:
+        S3Bucket: retailco-api
+        S3Key: api.zip
+
+  UploadDocumentIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt UploadDocumentFunction.Arn
+      PayloadFormatVersion: "2.0"
+
+  UploadDocumentRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /api/taxrates"
+      Target: !Sub "integrations/${UploadDocumentIntegration}"
+
+  UploadDocumentGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadDocumentFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:us-east-1:655533608647:${HttpApi}/*"
