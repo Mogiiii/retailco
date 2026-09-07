@@ -54,14 +54,14 @@ const TaxSummary = ({
             <td></td>
             <td></td>
             <td>
-              {processed_data
+              {Math.round(processed_data
                 .map((d) => d.pretaxAmount)
-                .reduce((total, v) => total + v, 0)}
+                .reduce((total, v) => total + v, 0) * 100) / 100}
             </td>
             <td>
-              {processed_data
+              {Math.round(processed_data
                 .map((d) => d.taxAmount)
-                .reduce((total, v) => total + v, 0)}
+                .reduce((total, v) => total + v, 0) * 100) / 100}
             </td>
           </tr>
         </tbody>
