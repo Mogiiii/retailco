@@ -82,7 +82,7 @@ def request_upload_url(event, context):
         "id": id,
         "status": "awaiting_upload",
         "s3_location": upload_location,
-        "createdAt": datetime.now(),
+        "createdAt": str(datetime.now()),
         "content_type": content_type,
     }
     tax_document_table.put_item(Item=i)

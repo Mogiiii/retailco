@@ -127,6 +127,9 @@ Resources:
       Code:
         S3Bucket: retailco-api
         S3Key: api.zip
+      Environment:
+        Variables:
+          OPENAI_API_KEY: !Ref OpenaiApiKey
 
   ApiStage:
     Type: AWS::ApiGatewayV2::Stage
