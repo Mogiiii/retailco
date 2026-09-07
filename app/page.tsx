@@ -93,7 +93,11 @@ export default function Home() {
         .then((r) => {
           console.log("uploading to " + r.data.uploadUrl);
           axios
-            .put(r.data.uploadUrl, file)
+            .put(r.data.uploadUrl, file, {
+              headers: {
+                "Content-Type": file.type,
+              },
+            })
             .then(() => {
               alert("Document successfully uploaded");
             })
