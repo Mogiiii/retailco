@@ -13,7 +13,7 @@ export const setTaxRates = async (data: taxCategory[]) => {
 };
 
 
-export const getTaxDocumentStatus = async (): Promise<taxDocumentStatus> => {
+export const getTaxDocumentStatus = async (): Promise<taxDocumentStatus[]> => {
   const resp = await axios.get(backend_url + "taxdocuments");
   return resp.data;
 }

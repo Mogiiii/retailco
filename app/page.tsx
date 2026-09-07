@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { backend_url } from "./config";
 import { taxCategory, taxDocumentStatus, taxSummary } from "./models";
-import { getTaxRates } from "./lib/api";
+import { getTaxDocumentStatus, getTaxRates } from "./lib/api";
 
 const TaxSummary = ({
   taxCategories,
@@ -114,6 +114,9 @@ export default function Home() {
   useEffect(() => {
     getTaxRates().then((r) => {
       setTaxCategories(r);
+    });
+    getTaxDocumentStatus().then((r) => {
+      setDocuments(r);
     });
   }, []);
 
